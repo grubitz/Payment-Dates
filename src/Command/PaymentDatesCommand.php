@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use App\PaymentDatesCalculator;
 
 class PaymentDatesCommand extends Command
 {
@@ -15,15 +16,24 @@ class PaymentDatesCommand extends Command
 
     protected function configure()
     {
-        $this->setDescription('Export a CSV file with salary and bonus payment dates for the next 12 months.');
+        $this
+        ->setDescription('Generate the CSV file containing the payment dates for the next X months (default 12).')
+        ->addArgument('months', InputArgument::OPTIONAL, 'Number of months.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        
+        $months = $input->getArgument('months');
+        if (is_null($months)) {
+            $months = 12;
+        }
 
-        $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
-
+        $calculator = new PaymentDatesCalculator($months);
+        $csvOutput = $calculator->getCSV();
+        $output->write($csvOutput);
+        
         return 0;
     }
 }
